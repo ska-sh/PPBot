@@ -1,7 +1,7 @@
 import asyncio
 import random
 import string
-from time import time
+import time
 from urllib.parse import unquote, quote
 
 import aiohttp
@@ -143,7 +143,7 @@ class Tapper:
             #https://t.me/PiggyPiggyofficialbot/game?startapp=share_6168926126
             #https://t.me/BlumCryptoBot/app?startapp=ref_v7cnI85reb
             peer = await self.tg_client.resolve_peer('PiggyPiggyofficialbot')
-            InputBotApp = types.InputBotAppShortName(bot_id=peer, short_name="game")
+            # InputBotApp = types.InputBotAppShortName(bot_id=peer, short_name="game")
 
             web_view = await self.tg_client.invoke(RequestWebView(
                 peer=peer,
@@ -195,122 +195,6 @@ class Tapper:
         except Exception as error:
             logger.error(f"<light-yellow>{self.session_name}</light-yellow> | Login error {error}")
 
-    async def claim_task(self, http_client: aiohttp.ClientSession, task):
-        try:
-            resp = await http_client.post(f'https://game-domain.blum.codes/api/v1/tasks/{task["id"]}/claim',
-                                          ssl=False)
-            resp_json = await resp.json()
-
-            #logger.debug(f"{self.session_name} | claim_task response: {resp_json}")
-
-            return resp_json.get('status') == "CLAIMED"
-        except Exception as error:
-            logger.error(f"<light-yellow>{self.session_name}</light-yellow> | Claim task error {error}")
-
-    async def start_complete_task(self, http_client: aiohttp.ClientSession, task):
-        try:
-            resp = await http_client.post(f'https://game-domain.blum.codes/api/v1/tasks/{task["id"]}/start',
-                                          ssl=False)
-            resp_json = await resp.json()
-
-            #logger.debug(f"{self.session_name} | start_complete_task response: {resp_json}")
-        except Exception as error:
-            logger.error(f"<light-yellow>{self.session_name}</light-yellow> | Start complete error {error}")
-
-    async def get_tasks(self, http_client: aiohttp.ClientSession):
-        try:
-            resp = await http_client.get('https://game-domain.blum.codes/api/v1/tasks', ssl=False)
-            resp_json = await resp.json()
-
-            #logger.debug(f"{self.session_name} | get_tasks response: {resp_json}")
-
-            if isinstance(resp_json, list):
-                return resp_json
-            else:
-                logger.error(f"{self.session_name} | Unexpected response format in get_tasks: {resp_json}")
-                return []
-        except Exception as error:
-            logger.error(f"<light-yellow>{self.session_name}</light-yellow> | Get tasks error {error}")
-
-    async def play_game(self, http_client: aiohttp.ClientSession, play_passes):
-        try:
-            while play_passes:
-                game_id = await self.start_game(http_client=http_client)
-
-                if not game_id or game_id == "cannot start game":
-                    logger.info(f"<light-yellow>{self.session_name}</light-yellow> | Couldn't start play in game!"
-                                f" play_passes: {play_passes}")
-                    break
-                else:
-                    self.success("Started playing game")
-
-                await asyncio.sleep(random.uniform(30, 40))
-
-                msg, points = await self.claim_game(game_id=game_id, http_client=http_client)
-                if isinstance(msg, bool) and msg:
-                    logger.info(f"<light-yellow>{self.session_name}</light-yellow> | Finish play in game!"
-                                f" reward: {points}")
-                else:
-                    logger.info(f"<light-yellow>{self.session_name}</light-yellow> | Couldn't play game,"
-                                f" msg: {msg} play_passes: {play_passes}")
-                    break
-
-                await asyncio.sleep(random.uniform(30, 40))
-
-                play_passes -= 1
-        except Exception as e:
-            logger.error(f"<light-yellow>{self.session_name}</light-yellow> | Error occurred during play game: {e}")
-            await asyncio.sleep(random.randint(0, 5))
-
-    async def start_game(self, http_client: aiohttp.ClientSession):
-        try:
-            resp = await http_client.post("https://game-domain.blum.codes/api/v1/game/play", ssl=False)
-            response_data = await resp.json()
-            if "gameId" in response_data:
-                return response_data.get("gameId")
-            elif "message" in response_data:
-                return response_data.get("message")
-        except Exception as e:
-            self.error(f"Error occurred during start game: {e}")
-
-    async def claim_game(self, game_id: str, http_client: aiohttp.ClientSession):
-        try:
-            points = random.randint(settings.POINTS[0], settings.POINTS[1])
-            json_data = {"gameId": game_id, "points": points}
-
-            resp = await http_client.post("https://game-domain.blum.codes/api/v1/game/claim", json=json_data,
-                                          ssl=False)
-            if resp.status != 200:
-                resp = await http_client.post("https://game-domain.blum.codes/api/v1/game/claim", json=json_data,
-                                              ssl=False)
-
-            txt = await resp.text()
-
-            return True if txt == 'OK' else txt, points
-        except Exception as e:
-            self.error(f"Error occurred during claim game: {e}")
-
-    async def claim(self, http_client: aiohttp.ClientSession):
-        try:
-            resp = await http_client.post("https://game-domain.blum.codes/api/v1/farming/claim", ssl=False)
-            if resp.status != 200:
-                resp = await http_client.post("https://game-domain.blum.codes/api/v1/farming/claim", ssl=False)
-
-            resp_json = await resp.json()
-
-            return int(resp_json.get("timestamp") / 1000), resp_json.get("availableBalance")
-        except Exception as e:
-            self.error(f"Error occurred during claim: {e}")
-
-    async def start(self, http_client: aiohttp.ClientSession):
-        try:
-            resp = await http_client.post("https://game-domain.blum.codes/api/v1/farming/start", ssl=False)
-
-            if resp.status != 200:
-                resp = await http_client.post("https://game-domain.blum.codes/api/v1/farming/start", ssl=False)
-        except Exception as e:
-            self.error(f"Error occurred during start: {e}")
-
     async def get_7day_info(self, http_client: aiohttp.ClientSession):
         try:
             json_data = {"PlayerID": 0}
@@ -327,7 +211,7 @@ class Tapper:
                     resp_json = await resp.json()
                     msg = resp_json.get("msg")
                     if msg == u'success':
-                        self.success(f"get_7day_info success")
+                        self.success(f"get_7day_info {crt_id} day claim success")
                 else:
                     self.success(f"get_7day_info already success")
             await self.balance(http_client=http_client)
@@ -396,14 +280,30 @@ class Tapper:
 
     async def do_daily_task_info(self, http_client: aiohttp.ClientSession):
         try:
-            json_data = {"PlayerID": 0}
-            resp = await http_client.post("https://api.prod.piggypiggy.io/game/GetDailyTaskInfo", json=json_data, ssl=False)
-            resp_json = await resp.json()
-            msg = resp_json.get('msg')
-            if msg == u'success':
-                map_task = resp_json.get('data').get('mapTask')
-                for task in map_task:
-                    await self.take_task(http_client=http_client, task_id=int(task))
+            for daily_task in settings.TASKLIST_CD:
+                json_data = {"PlayerID": 0}
+                resp = await http_client.post("https://api.prod.piggypiggy.io/game/GetDailyTaskInfo", json=json_data, ssl=False)
+                resp_json = await resp.json()
+                msg = resp_json.get('msg')
+                if msg == u'success':
+                    cur_task_id = resp_json.get('data').get('curTaskID')
+                    if cur_task_id is not None:
+                        await self.complete_task(http_client=http_client, task_id=cur_task_id)
+
+                    map_task = resp_json.get('data').get('mapTask')
+                    if map_task is None:
+                        await self.take_task(http_client=http_client, task_id=daily_task.get("task_id"))
+                    else:
+                        compeleteCount = map_task.get(str(daily_task.get("task_id"))).get("compeleteCount")
+                        if compeleteCount < daily_task.get("compeleteCount"):
+                            last_complete_time = map_task.get(str(daily_task.get("task_id"))).get("lastCompleteTime")
+                            cd = time.time() - daily_task.get("cd") * 60
+                            if last_complete_time < cd * 1000:
+                                await self.take_task(http_client=http_client, task_id=daily_task.get("task_id"))
+                            else:
+                                self.warning(f"task id:{daily_task.get('task_id')} cd: {cd * 1000 - last_complete_time}")
+                        else:
+                            self.warning(f"task id:{daily_task.get('task_id')} is finish")
             return True
         except Exception as e:
             self.error(f"do_daily_task_info: {e}")
@@ -418,7 +318,7 @@ class Tapper:
                 self.success(f"take task：{task_id} success")
                 self.success(f"<lc>[Tasking]</lc> Sleep 20S")
                 await asyncio.sleep(20)
-                await self.complete_task(http_client=http_client, task_id=task_id)
+                # await self.complete_task(http_client=http_client, task_id=task_id)
             else:
                 self.info(f"take_task {resp_json}")
             return True
@@ -481,26 +381,10 @@ class Tapper:
                 if isinstance(msg, bool) and msg:
                     logger.success(f"<light-yellow>{self.session_name}</light-yellow> | do_daily_task_info!")
 
-                msg = await self.complete_achievement(http_client=http_client)
-                if isinstance(msg, bool) and msg:
-                    logger.success(f"<light-yellow>{self.session_name}</light-yellow> | complete_achievement!")
-                #
-                # timestamp, start_time, end_time, play_passes = await self.balance(http_client=http_client)
-                #
-                # if isinstance(play_passes, int):
-                #     self.info(f'You have {play_passes} play passes')
-                #
-                # claim_amount, is_available = await self.friend_balance(http_client=http_client)
-                #
-                # if claim_amount != 0 and is_available:
-                #     amount = await self.friend_claim(http_client=http_client)
-                #     self.success(f"Claimed friend ref reward {amount}")
-                #
-                # if play_passes and play_passes > 0 and settings.PLAY_GAMES is True:
-                #     await self.play_game(http_client=http_client, play_passes=play_passes)
-                #
-                # #await asyncio.sleep(random.uniform(1, 3))
-                #
+                # msg = await self.complete_achievement(http_client=http_client)
+                # if isinstance(msg, bool) and msg:
+                #     logger.success(f"<light-yellow>{self.session_name}</light-yellow> | complete_achievement!")
+
                 try:
                     await self.balance(http_client=http_client)
                     self.info(f"<lc>[PiggyPiggy]</lc> Sleep 300S")
