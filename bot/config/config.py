@@ -9,6 +9,7 @@ class Settings(BaseSettings):
 
     PLAY_GAMES: bool = True
     POINTS: list[int] = [190, 230]
+    BLACKLIST_TASK: list[str] = ['1101', '1201', '1401', '1625', '1629', '1632', '1633', '1634', '1639', '1641', '1642', '1643']
 
     USE_REF: bool = False
     REF_ID: str = ''

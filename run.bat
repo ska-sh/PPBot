@@ -31,9 +31,9 @@ if not exist .env (
 )
 
 ::Обновление локального репозитория без удаления изменений
-git stash
-git pull
-git stash pop
+echo git stash
+echo git pull
+echo git stash pop
 
 echo Starting the bot...
 python main.py
