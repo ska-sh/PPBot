@@ -490,8 +490,9 @@ class Tapper:
             if msg == u'success':
                 card_cnts = resp_json.get('data').get('detail').get('cardCnt')
                 if card_cnts.get('101') == 1:
-                    self.error(f"抢钱接口未编写")
+                    self.error(f"抢劫卡片，抢钱接口未编写")
                 elif card_cnts.get('102') == 1:
+                    self.info(f"带薪休假卡片")
                     #开始带薪休假
                     json_data = {"PlayerID": 0}
                     resp = await http_client.post("https://api.prod.piggypiggy.io/game/StartMoyu", json=json_data, ssl=False)
