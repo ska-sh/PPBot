@@ -500,6 +500,14 @@ class Tapper:
                     msg = resp_json.get('msg')
                     if msg == u'success':
                         self.success(f"带薪休假中")
+                elif card_cnts.get('103') == 1:
+                    self.error(f"工作翻倍卡片，接口未编写")
+                elif card_cnts.get('104') == 1:
+                    self.error(f"sharingan，接口未编写")
+                elif card_cnts.get('105') == 1:
+                    self.error(f"无冷却时间，接口未编写")
+                elif card_cnts.get('106') == 1:
+                    self.error(f"刷新工作，接口未编写")
             return True
         except Exception as e:
             self.error(f"抢钱操作失败 : {e}")
