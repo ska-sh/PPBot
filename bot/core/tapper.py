@@ -34,6 +34,7 @@ class Tapper:
         self.start_param = None
         self.peer = None
         self.first_run = None
+        self.role_type = None
 
         self.session_ug_dict = self.load_user_agents() or []
 
@@ -291,7 +292,7 @@ class Tapper:
             if msg == u'success':
                 currency = resp_json.get('data').get('currency')
                 self.success(f"balance:{currency}")
-                if(int(currency) > 2499):
+                if(float(currency) > 2499):
                     self.info(f"开始抢升级角色")
                     await self.create_star_pay(http_client=http_client)
         except Exception as e:
@@ -299,7 +300,15 @@ class Tapper:
 
     async def do_daily_task_info(self, http_client: aiohttp.ClientSession):
         try:
-            for daily_task in settings.TASKLIST_CD:
+
+            task_list = ""
+
+            if self.role_type == 0:
+                task_list = settings.TASKLIST_CD
+            elif self.role_type == 1:
+                task_list = settings.TASKLIST_CD_1
+
+            for daily_task in task_list:
                 json_data = {"PlayerID": 0}
                 resp = await http_client.post("https://api.prod.piggypiggy.io/game/GetDailyTaskInfo", json=json_data, ssl=False)
                 resp_json = await resp.json()
@@ -411,6 +420,10 @@ class Tapper:
 
                     login_need = False
 
+                msg = await self.role_type_base(http_client=http_client)
+                if isinstance(msg, bool) and msg:
+                    logger.success(f"<light-yellow>{self.session_name}</light-yellow> | 获取角色信息完成")
+
                 msg = await self.get_7day_info(http_client=http_client)
                 if isinstance(msg, bool) and msg:
                     logger.success(f"<light-yellow>{self.session_name}</light-yellow> | get_7day_info!")
@@ -489,6 +502,25 @@ class Tapper:
             return True
         except Exception as e:
             self.error(f"抢钱操作失败 : {e}")
+
+    async def role_type_base(self, http_client: aiohttp.ClientSession):
+        try:
+            if self.role_type is None:
+                resp = await http_client.post("https://api.prod.piggypiggy.io/game/GetPlayerBase", ssl=False)
+                resp_json = await resp.json()
+                msg = resp_json.get('msg')
+
+                if msg == u'success':
+                    self.warning(f"账号基础信息：{resp_json}")
+                    if resp_json.get('data').get('roleType') is None:
+                        self.role_type = 0
+                        self.success(f"获取角色类型：1")
+                    elif resp_json.get('data').get('roleType') is not None:
+                        self.role_type = resp_json.get('data').get('roleType')
+                        self.success(f"获取角色类型：{self.role_type}")
+            return True
+        except Exception as e:
+            self.error(f"获取角色类型错误: {e}")
 
 async def run_tapper(tg_client: Client, proxy: str | None):
     try:
