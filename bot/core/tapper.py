@@ -211,13 +211,29 @@ class Tapper:
                     resp_json = await resp.json()
                     msg = resp_json.get("msg")
                     if msg == u'success':
-                        self.success(f"get_7day_info {crt_id} day claim success")
+                        self.success(f"7日奖励领取成功，天数： {crt_id} ")
+                        await self.set_up_shop(http_client=http_client)
                 else:
-                    self.success(f"get_7day_info already success")
+                    self.info(f"7日奖励已领取")
             await self.balance(http_client=http_client)
             return True
         except Exception as e:
-            self.error(f"Error get_7day_info: {e}")
+            self.error(f"登录领取7日奖励错误: {e}")
+
+    #开始工作
+    async def set_up_shop(self, http_client: aiohttp.ClientSession):
+        try:
+            json_data = {"PlayerID": 0}
+            resp = await http_client.post("https://api.prod.piggypiggy.io/game/SetUpShop", json=json_data, ssl=False)
+            resp_json = await resp.json()
+            msg = resp_json.get("msg")
+            if msg == u'success':
+                self.success(f"开始工作")
+            else:
+                self.success(f"已经开始工作")
+
+        except Exception as e:
+            self.error(f"开始工作错误: {e}")
 
     async def complete_achievement(self, http_client: aiohttp.ClientSession):
         try:
@@ -294,16 +310,21 @@ class Tapper:
                     if map_task is None:
                         await self.take_task(http_client=http_client, task_id=daily_task.get("task_id"))
                     else:
-                        compeleteCount = map_task.get(str(daily_task.get("task_id"))).get("compeleteCount")
-                        if compeleteCount < daily_task.get("compeleteCount"):
+                        if map_task.get(str(daily_task.get("task_id"))) is None:
+                            #self.success(f"task id: {daily_task.get('task_id')} is None")
+                            await self.take_task(http_client=http_client, task_id=daily_task.get("task_id"))
+                            continue
+
+                        compelete_count = map_task.get(str(daily_task.get("task_id"))).get("compeleteCount")
+                        if compelete_count < daily_task.get("compeleteCount"):
                             last_complete_time = map_task.get(str(daily_task.get("task_id"))).get("lastCompleteTime")
                             cd = time.time() - daily_task.get("cd") * 60
                             if last_complete_time < cd * 1000:
                                 await self.take_task(http_client=http_client, task_id=daily_task.get("task_id"))
                             else:
-                                self.warning(f"task id:{daily_task.get('task_id')} cd: {cd * 1000 - last_complete_time}")
+                                self.warning(f"工作时间冷却中: {daily_task.get('task_id')}")
                         else:
-                            self.warning(f"task id:{daily_task.get('task_id')} is finish")
+                            self.warning(f"工作完成: {daily_task.get('task_id')}")
             return True
         except Exception as e:
             self.error(f"do_daily_task_info: {e}")
@@ -315,15 +336,14 @@ class Tapper:
             resp_json = await resp.json()
             msg = resp_json.get('msg')
             if msg == u'success':
-                self.success(f"take task：{task_id} success")
+                self.success(f"开始工作：{task_id} 工作时间20秒")
                 self.success(f"<lc>[Tasking]</lc> Sleep 20S")
                 await asyncio.sleep(20)
-                # await self.complete_task(http_client=http_client, task_id=task_id)
             else:
-                self.info(f"take_task {resp_json}")
+                self.error(f"工作失败： {resp_json}")
             return True
         except Exception as e:
-            self.error(f"{self.session_name} take task : {e}")
+            self.error(f"工作失败错误 : {e}")
 
     async def complete_task(self, http_client: aiohttp.ClientSession, task_id: int):
         try:
@@ -332,9 +352,9 @@ class Tapper:
             resp_json = await resp.json()
             msg = resp_json.get('msg')
             if msg == u'success':
-                self.success(f"complete task：{task_id} success")
+                self.success(f"获取工作奖励：{task_id}")
         except Exception as e:
-            self.error(f"complete task : {e}")
+            self.error(f"获取工作奖励错误 : {e}")
 
     async def check_proxy(self, http_client: aiohttp.ClientSession, proxy: Proxy) -> None:
         try:
@@ -343,6 +363,21 @@ class Tapper:
             logger.info(f"<light-yellow>{self.session_name}</light-yellow> | Proxy IP: {ip}")
         except Exception as error:
             logger.error(f"<light-yellow>{self.session_name}</light-yellow> | Proxy: {proxy} | Error: {error}")
+
+    async def create_star_pay(self, http_client: aiohttp.ClientSession):
+        try:
+            self.info(f"开始升级角色")
+            json_data = {"RoleType": 1, "PlayerID": 0, "UseStar": 0, "ConfigID": "", "Param": "", "ClientParam": "0-1", "Count": 1}
+            resp = await http_client.post("https://api.prod.piggypiggy.io/game/CreateStarPay", json=json_data, ssl=False)
+            resp_json = await resp.json()
+            msg = resp_json.get('msg')
+            if msg == u'success':
+                self.success(f"角色升级成功")
+            else:
+                self.success(f"角色升级失败")
+            return True
+        except Exception as e:
+            self.error(f"抢钱操作失败 : {e}")
 
     async def run(self, proxy: str | None) -> None:
         access_token = None
@@ -385,11 +420,39 @@ class Tapper:
                 # if isinstance(msg, bool) and msg:
                 #     logger.success(f"<light-yellow>{self.session_name}</light-yellow> | complete_achievement!")
 
+                msg = await self.plunder_detail(http_client=http_client)
+                if isinstance(msg, bool) and msg:
+                    logger.success(f"<light-yellow>{self.session_name}</light-yellow> | 抢钱接口调用完成!")
+
+                msg = await self.create_star_pay(http_client=http_client)
+                if isinstance(msg, bool) and msg:
+                    logger.success(f"<light-yellow>{self.session_name}</light-yellow> | 升级角色接口调用完成!")
+
                 try:
                     await self.balance(http_client=http_client)
-                    self.info(f"<lc>[PiggyPiggy]</lc> Sleep 300S")
+
+                    json_data = {"PlayerID": 0}
+                    resp = await http_client.post("https://api.prod.piggypiggy.io/game/GetDailyTaskInfo", json=json_data, ssl=False)
+                    resp_json = await resp.json()
+                    msg = resp_json.get('msg')
+                    if msg == u'success':
+                        map_task = resp_json.get('data').get('mapTask')
+                        len_task = len(settings.TASKLIST_CD)
+                        if(len(map_task) >= len(settings.TASKLIST_CD)):
+                            for daily_task in settings.TASKLIST_CD:
+                                compelete_count = daily_task.get('compeleteCount')
+                                map_compelete_count = map_task.get(str(daily_task.get("task_id"))).get('compeleteCount')
+                                if map_compelete_count == compelete_count:
+                                    len_task = len_task - 1
+                                if len_task <= 0:
+                                    self.info(f"<lc>[PiggyPiggy]</lc> 工作全部完成，休眠24小时")
+                                    await asyncio.sleep(3600 * 24)
+                                else:
+                                    self.info(f"<lc>[PiggyPiggy]</lc> 休眠1分钟")
+                                    await asyncio.sleep(60)
+
                     login_need = False
-                    await asyncio.sleep(300)
+
 
                 except Exception as e:
                     self.error(f"<lc>[PiggyPiggy]</lc> Error : {e}")
@@ -401,6 +464,28 @@ class Tapper:
                 logger.error(f"<light-yellow>{self.session_name}</light-yellow> | Unknown error: {error}")
                 await asyncio.sleep(delay=3)
 
+    async def plunder_detail(self, http_client: aiohttp.ClientSession):
+        try:
+            self.info(f"开始抢钱操作")
+            json_data = {"PlayerID": 0}
+            resp = await http_client.post("https://api.prod.piggypiggy.io/game/PlunderDetail", json=json_data, ssl=False)
+            resp_json = await resp.json()
+            msg = resp_json.get('msg')
+            if msg == u'success':
+                card_cnts = resp_json.get('data').get('detail').get('cardCnt')
+                if card_cnts.get('101') == 1:
+                    self.error(f"抢钱接口未编写")
+                elif card_cnts.get('102') == 1:
+                    #开始带薪休假
+                    json_data = {"PlayerID": 0}
+                    resp = await http_client.post("https://api.prod.piggypiggy.io/game/StartMoyu", json=json_data, ssl=False)
+                    resp_json = await resp.json()
+                    msg = resp_json.get('msg')
+                    if msg == u'success':
+                        self.success(f"带薪休假中")
+            return True
+        except Exception as e:
+            self.error(f"抢钱操作失败 : {e}")
 
 async def run_tapper(tg_client: Client, proxy: str | None):
     try:
