@@ -35,6 +35,7 @@ class Tapper:
         self.peer = None
         self.first_run = None
         self.role_type = None
+        self.player_id = None
 
         self.session_ug_dict = self.load_user_agents() or []
 
@@ -214,6 +215,8 @@ class Tapper:
                     if msg == u'success':
                         self.success(f"7日奖励领取成功，天数： {crt_id} ")
                         await self.set_up_shop(http_client=http_client)
+                    else:
+                        self.error(f"7日奖励领取失败")
                 else:
                     self.info(f"7日奖励已领取")
             await self.balance(http_client=http_client)
@@ -229,7 +232,7 @@ class Tapper:
             resp_json = await resp.json()
             msg = resp_json.get("msg")
             if msg == u'success':
-                self.success(f"开始工作")
+                self.success(f"点击开始工作完成")
             else:
                 self.success(f"已经开始工作")
 
@@ -490,7 +493,22 @@ class Tapper:
             if msg == u'success':
                 card_cnts = resp_json.get('data').get('detail').get('cardCnt')
                 if card_cnts.get('101') == 1:
-                    self.error(f"抢劫卡片，抢钱接口未编写")
+                    try:
+                        self.info(f"开始抢劫")
+                        json_data = {"PlayerID": int(self.player_id)}
+                        resp = await http_client.post("https://api.prod.piggypiggy.io/game/StartAPlunder", json=json_data, ssl=False)
+                        resp_json = await resp.json()
+                        msg = resp_json.get('msg')
+                        if msg == u'success':
+                            self.success(f"开始抢钱，默认抢劫第一用户")
+                            json_data = {"PlayerID": 0, "Pos": 0}
+                            resp = await http_client.post("https://api.prod.piggypiggy.io/game/TakeAPlunder", json=json_data, ssl=False)
+                            resp_json = await resp.json()
+                            msg = resp_json.get('msg')
+                            if msg == u'success':
+                                self.success(f"抢劫成功：{resp_json.get('data').get('value')}，用户原有资金：{resp_json.get('data').get('totalWinValue')}")
+                    except Exception as e:
+                        self.error(f"抢钱失败 : {e}")
                 elif card_cnts.get('102') == 1:
                     self.info(f"带薪休假卡片")
                     #开始带薪休假
@@ -521,6 +539,7 @@ class Tapper:
 
                 if msg == u'success':
                     self.warning(f"账号基础信息：{resp_json}")
+                    self.player_id = resp_json.get('data').get('playerID')
                     if resp_json.get('data').get('roleType') is None:
                         self.role_type = 0
                         self.success(f"获取角色类型：1")
