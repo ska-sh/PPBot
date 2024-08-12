@@ -291,6 +291,9 @@ class Tapper:
             if msg == u'success':
                 currency = resp_json.get('data').get('currency')
                 self.success(f"balance:{currency}")
+                if(int(currency) > 2499):
+                    self.info(f"开始抢升级角色")
+                    await self.create_star_pay(http_client=http_client)
         except Exception as e:
             self.error(f"Error occurred during balance: {e}")
 
@@ -340,7 +343,7 @@ class Tapper:
                 self.success(f"<lc>[Tasking]</lc> Sleep 20S")
                 await asyncio.sleep(20)
             else:
-                self.error(f"工作失败： {resp_json}")
+                self.error(f"工作失败： {resp_json}, 任务id:{task_id}")
             return True
         except Exception as e:
             self.error(f"工作失败错误 : {e}")
@@ -424,9 +427,9 @@ class Tapper:
                 if isinstance(msg, bool) and msg:
                     logger.success(f"<light-yellow>{self.session_name}</light-yellow> | 抢钱接口调用完成!")
 
-                msg = await self.create_star_pay(http_client=http_client)
-                if isinstance(msg, bool) and msg:
-                    logger.success(f"<light-yellow>{self.session_name}</light-yellow> | 升级角色接口调用完成!")
+                # msg = await self.create_star_pay(http_client=http_client)
+                # if isinstance(msg, bool) and msg:
+                #     logger.success(f"<light-yellow>{self.session_name}</light-yellow> | 升级角色接口调用完成!")
 
                 try:
                     await self.balance(http_client=http_client)
