@@ -332,7 +332,7 @@ class Tapper:
                         if map_task.get(str(daily_task.get("task_id"))) is None:
                             #self.success(f"task id: {daily_task.get('task_id')} is None")
                             await self.take_task(http_client=http_client, daily_task=daily_task)
-                            continue
+                            return True
 
                         compelete_count = map_task.get(str(daily_task.get("task_id"))).get("compeleteCount")
                         if compelete_count < daily_task.get("compeleteCount"):
@@ -340,10 +340,11 @@ class Tapper:
                             cd = time.time() - daily_task.get("cd") * 60
                             if last_complete_time < cd * 1000:
                                 await self.take_task(http_client=http_client, daily_task=daily_task)
+                                return True
                             else:
                                 self.warning(f"工作时间冷却中: {daily_task.get('task_id')}, 冷却时间: {format_duration(last_complete_time/1000 - cd)}")
-                        else:
-                            self.warning(f"工作完成: {daily_task.get('task_id')}")
+                        # else:
+                        #     self.warning(f"工作完成: {daily_task.get('task_id')}")
             return True
         except Exception as e:
             self.error(f"do_daily_task_info: {e}")
@@ -470,10 +471,11 @@ class Tapper:
                                 if len_task <= 0:
                                     self.info(f"<lc>[PiggyPiggy]</lc> 工作全部完成，休眠24小时")
                                     await asyncio.sleep(3600 * 24)
-                                else:
-                                    self.info(f"<lc>[PiggyPiggy]</lc> 休眠1分钟")
-                                    await asyncio.sleep(60)
-
+                                # else:
+                                #     self.info(f"<lc>[PiggyPiggy]</lc> 休眠1分钟")
+                                #     await asyncio.sleep(60)
+                    self.info(f"<lc>[PiggyPiggy]</lc> 休眠1分钟")
+                    await asyncio.sleep(60)
                     login_need = False
 
 
