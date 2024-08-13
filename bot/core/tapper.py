@@ -214,7 +214,6 @@ class Tapper:
                     msg = resp_json.get("msg")
                     if msg == u'success':
                         self.success(f"7日奖励领取成功，天数： {crt_id} ")
-                        await self.set_up_shop(http_client=http_client)
                     else:
                         self.error(f"7日奖励领取失败")
                 else:
@@ -227,6 +226,7 @@ class Tapper:
     #开始工作
     async def set_up_shop(self, http_client: aiohttp.ClientSession):
         try:
+            self.info("准备开始工作")
             json_data = {"PlayerID": 0}
             resp = await http_client.post("https://api.prod.piggypiggy.io/game/SetUpShop", json=json_data, ssl=False)
             resp_json = await resp.json()
@@ -295,7 +295,7 @@ class Tapper:
             if msg == u'success':
                 currency = resp_json.get('data').get('currency')
                 self.success(f"balance:{currency}")
-                if(float(currency) > 2499):
+                if float(currency) > 2499 and int(self.role_type) == 0:
                     self.info(f"开始抢升级角色")
                     await self.create_star_pay(http_client=http_client)
         except Exception as e:
@@ -317,6 +317,10 @@ class Tapper:
                 resp_json = await resp.json()
                 msg = resp_json.get('msg')
                 if msg == u'success':
+                    set_up_shop_time = resp_json.get('data').get('setUpShopTime')
+                    if set_up_shop_time is None:
+                        await self.set_up_shop(http_client=http_client)
+
                     cur_task_id = resp_json.get('data').get('curTaskID')
                     if cur_task_id is not None:
                         await self.complete_task(http_client=http_client, task_id=cur_task_id)
