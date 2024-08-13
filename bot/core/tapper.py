@@ -341,7 +341,7 @@ class Tapper:
                             if last_complete_time < cd * 1000:
                                 await self.take_task(http_client=http_client, daily_task=daily_task)
                             else:
-                                self.warning(f"工作时间冷却中: {daily_task.get('task_id')}, 冷却时间: {format_duration(last_complete_time - cd * 1000)}")
+                                self.warning(f"工作时间冷却中: {daily_task.get('task_id')}, 冷却时间: {format_duration(last_complete_time/1000 - cd)}")
                         else:
                             self.warning(f"工作完成: {daily_task.get('task_id')}")
             return True
@@ -350,14 +350,14 @@ class Tapper:
 
     async def take_task(self, http_client: aiohttp.ClientSession, daily_task: dict):
         try:
-            json_data = {"PlayerID": 0, "TaskID": daily_task.get('task_id')}
+            json_data = {"PlayerID": 0, "TaskID": int(daily_task.get('task_id'))}
             resp = await http_client.post("https://api.prod.piggypiggy.io/game/TakeTask", json=json_data, ssl=False)
             resp_json = await resp.json()
             msg = resp_json.get('msg')
             if msg == u'success':
                 self.success(f"开始工作：{daily_task.get('task_id')} 工作时间{daily_task.get('working')}秒")
-                self.success(f"<lc>[Tasking]</lc> Sleep 20S")
-                await asyncio.sleep(20)
+                #self.success(f"<lc>[Tasking]</lc> Sleep {daily_task.get('working')}秒")
+                await asyncio.sleep(daily_task.get('working'))
             else:
                 self.error(f"工作失败： {resp_json}, 任务id:{daily_task.get('task_id')}")
             return True
@@ -445,7 +445,7 @@ class Tapper:
 
                 msg = await self.plunder_detail(http_client=http_client)
                 if isinstance(msg, bool) and msg:
-                    logger.success(f"<light-yellow>{self.session_name}</light-yellow> | 抢钱接口调用完成!")
+                    logger.success(f"<light-yellow>{self.session_name}</light-yellow> | 每日卡片操作完成!")
 
                 # msg = await self.create_star_pay(http_client=http_client)
                 # if isinstance(msg, bool) and msg:
@@ -489,7 +489,7 @@ class Tapper:
 
     async def plunder_detail(self, http_client: aiohttp.ClientSession):
         try:
-            self.info(f"开始抢钱操作")
+            # self.info(f"开始抢钱操作")
             json_data = {"PlayerID": 0}
             resp = await http_client.post("https://api.prod.piggypiggy.io/game/PlunderDetail", json=json_data, ssl=False)
             resp_json = await resp.json()
