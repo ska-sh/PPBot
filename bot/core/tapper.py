@@ -327,11 +327,11 @@ class Tapper:
 
                     map_task = resp_json.get('data').get('mapTask')
                     if map_task is None:
-                        await self.take_task(http_client=http_client, task_id=daily_task.get("task_id"))
+                        await self.take_task(http_client=http_client, daily_task=daily_task)
                     else:
                         if map_task.get(str(daily_task.get("task_id"))) is None:
                             #self.success(f"task id: {daily_task.get('task_id')} is None")
-                            await self.take_task(http_client=http_client, task_id=daily_task.get("task_id"))
+                            await self.take_task(http_client=http_client, daily_task=daily_task)
                             continue
 
                         compelete_count = map_task.get(str(daily_task.get("task_id"))).get("compeleteCount")
@@ -339,27 +339,27 @@ class Tapper:
                             last_complete_time = map_task.get(str(daily_task.get("task_id"))).get("lastCompleteTime")
                             cd = time.time() - daily_task.get("cd") * 60
                             if last_complete_time < cd * 1000:
-                                await self.take_task(http_client=http_client, task_id=daily_task.get("task_id"))
+                                await self.take_task(http_client=http_client, daily_task=daily_task)
                             else:
-                                self.warning(f"工作时间冷却中: {daily_task.get('task_id')}")
+                                self.warning(f"工作时间冷却中: {daily_task.get('task_id')}, 冷却时间: {format_duration(last_complete_time - cd * 1000)}")
                         else:
                             self.warning(f"工作完成: {daily_task.get('task_id')}")
             return True
         except Exception as e:
             self.error(f"do_daily_task_info: {e}")
 
-    async def take_task(self, http_client: aiohttp.ClientSession, task_id: int):
+    async def take_task(self, http_client: aiohttp.ClientSession, daily_task: dict):
         try:
-            json_data = {"PlayerID": 0, "TaskID": task_id}
+            json_data = {"PlayerID": 0, "TaskID": daily_task.get('task_id')}
             resp = await http_client.post("https://api.prod.piggypiggy.io/game/TakeTask", json=json_data, ssl=False)
             resp_json = await resp.json()
             msg = resp_json.get('msg')
             if msg == u'success':
-                self.success(f"开始工作：{task_id} 工作时间20秒")
+                self.success(f"开始工作：{daily_task.get('task_id')} 工作时间{daily_task.get('working')}秒")
                 self.success(f"<lc>[Tasking]</lc> Sleep 20S")
                 await asyncio.sleep(20)
             else:
-                self.error(f"工作失败： {resp_json}, 任务id:{task_id}")
+                self.error(f"工作失败： {resp_json}, 任务id:{daily_task.get('task_id')}")
             return True
         except Exception as e:
             self.error(f"工作失败错误 : {e}")
