@@ -546,7 +546,7 @@ class Tapper:
                     self.player_id = resp_json.get('data').get('playerID')
                     if resp_json.get('data').get('roleType') is None:
                         self.role_type = 0
-                        self.success(f"获取角色类型：1")
+                        self.success(f"获取角色类型：0")
                     elif resp_json.get('data').get('roleType') is not None:
                         self.role_type = resp_json.get('data').get('roleType')
                         self.success(f"获取角色类型：{self.role_type}")
