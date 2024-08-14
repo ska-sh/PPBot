@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     API_HASH: str
 
     PLAY_GAMES: bool = True
+
+    AUTO_UPGRADE: bool = False
+
     POINTS: list[int] = [190, 230]
     BLACKLIST_TASK: list[str] = ['1101', '1201', '1401', '1625', '1629', '1632', '1633', '1634', '1639', '1641', '1642',
                                  '1643']
