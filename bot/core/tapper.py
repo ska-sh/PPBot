@@ -411,7 +411,6 @@ class Tapper:
                 card_cnts = resp_json.get('data').get('detail').get('cardCnt')
                 if card_cnts.get('101') == 1:
                     try:
-                        self.info(f"开始抢劫")
                         json_data = {"PlayerID": int(self.player_id)}
                         resp = await http_client.post("https://api.prod.piggypiggy.io/game/StartAPlunder", json=json_data, ssl=False)
                         resp_json = await resp.json()
@@ -426,17 +425,28 @@ class Tapper:
                                 self.success(f"抢劫成功：{resp_json.get('data').get('value')}，用户原有资金：{resp_json.get('data').get('totalWinValue')}")
                     except Exception as e:
                         self.error(f"抢钱失败 : {e}")
-                elif card_cnts.get('103') == 1:
-                    self.error(f"工作翻倍卡片，接口未编写")
-                elif card_cnts.get('102') == 1:
-                    self.info(f"带薪休假卡片")
-                    #开始带薪休假
-                    json_data = {"PlayerID": 0}
-                    resp = await http_client.post("https://api.prod.piggypiggy.io/game/StartMoyu", json=json_data, ssl=False)
-                    resp_json = await resp.json()
-                    msg = resp_json.get('msg')
-                    if msg == u'success':
-                        self.success(f"带薪休假中")
+                elif card_cnts.get('103') >= 1:
+                    try:
+                        #不是翻倍状态，使用翻倍卡片
+                        if resp_json.get('data').get('detail').get('fanbei') is None:
+                            json_data = {"PlayerID": 0}
+                            resp = await http_client.post("https://api.prod.piggypiggy.io/game/StartFanbei", json=json_data, ssl=False)
+                            resp_json = await resp.json()
+                            msg = resp_json.get('msg')
+                            if msg == u'success':
+                                self.success(f"工资翻倍成功")
+                    except Exception as e:
+                        self.error(f"工资翻倍错误：{e}")
+                elif card_cnts.get('102') >= 1:
+                    #不是摸鱼状态，使用摸鱼卡片
+                    if resp_json.get('data').get('detail').get('moyu') is None:
+                        #开始带薪休假
+                        json_data = {"PlayerID": 0}
+                        resp = await http_client.post("https://api.prod.piggypiggy.io/game/StartMoyu", json=json_data, ssl=False)
+                        resp_json = await resp.json()
+                        msg = resp_json.get('msg')
+                        if msg == u'success':
+                            self.success(f"带薪休假中")
                 elif card_cnts.get('104') == 1:
                     self.error(f"sharingan，接口未编写")
                 elif card_cnts.get('105') == 1:
