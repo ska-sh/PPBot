@@ -533,6 +533,7 @@ class Tapper:
                         elif self.role_type == 1:
                             task_list_1 = settings.TASKLIST_CD_1
                         if len(map_task) >= len(task_list_1):
+                            len_task = len(task_list_1)
                             for daily_task in task_list_1:
                                 compelete_count = daily_task.get('compeleteCount')
                                 map_compelete_count = map_task.get(str(daily_task.get("task_id"))).get('compeleteCount')
