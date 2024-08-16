@@ -298,6 +298,28 @@ class Tapper:
         except Exception as e:
             self.error(f"Error occurred during balance: {e}")
 
+    async def get_shop_info(self, http_client: aiohttp.ClientSession):
+        try:
+            resp = await http_client.post("https://api.prod.piggypiggy.io/game/GetShopInfo", ssl=False)
+            resp_json = await resp.json()
+            msg = resp_json.get('msg')
+
+            if msg == u'success':
+                shop_box = resp_json.get('data').get('shopBox')
+                if shop_box is None:
+                    json_data = {"RoleType": 0, "PlayerID": 0, "UseStar": 0, "ConfigID": "2001", "Param": "",
+                                 "ClientParam": "2001", "Count": 1}
+                    resp = await http_client.post("https://api.prod.piggypiggy.io/game/CreateStarPay", json=json_data, ssl=False)
+                    resp_json = await resp.json()
+                    if resp_json.get('msg') == "success":
+                        self.success(f"宝箱使用成功")
+
+            #多休眠5秒
+            await asyncio.sleep(5)
+        except Exception as e:
+            self.error(f"Error occurred during balance: {e}")
+
+
     async def do_daily_task_info(self, http_client: aiohttp.ClientSession):
         try:
 
@@ -511,6 +533,8 @@ class Tapper:
                 msg = await self.get_7day_info(http_client=http_client)
 
                 msg = await self.plunder_detail(http_client=http_client)
+
+                msg = await self.get_shop_info(http_client=http_client)
 
                 msg = await self.do_daily_task_info(http_client=http_client)
 
