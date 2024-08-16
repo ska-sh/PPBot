@@ -527,13 +527,13 @@ class Tapper:
                     msg = resp_json.get('msg')
                     if msg == u'success':
                         map_task = resp_json.get('data').get('mapTask')
-                        len_task = ""
+                        task_list = ""
                         if self.role_type == 0:
-                            len_task = len(settings.TASKLIST_CD)
+                            task_list = settings.TASKLIST_CD
                         elif self.role_type == 1:
-                            len_task = len(settings.TASKLIST_CD_1)
-                        if len(map_task) >= len(settings.TASKLIST_CD):
-                            for daily_task in settings.TASKLIST_CD:
+                            task_list = settings.TASKLIST_CD_1
+                        if len(map_task) >= len(task_list):
+                            for daily_task in task_list:
                                 compelete_count = daily_task.get('compeleteCount')
                                 map_compelete_count = map_task.get(str(daily_task.get("task_id"))).get('compeleteCount')
                                 if map_compelete_count == compelete_count:
