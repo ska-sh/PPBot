@@ -319,7 +319,6 @@ class Tapper:
         except Exception as e:
             self.error(f"Error occurred during balance: {e}")
 
-
     async def do_daily_task_info(self, http_client: aiohttp.ClientSession):
         try:
 
