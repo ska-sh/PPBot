@@ -527,8 +527,7 @@ class Tapper:
                     if self.first_run is not True:
                         self.success("Logged in successfully")
                         self.first_run = True
-
-                    login_need = False
+                        login_need = False
 
                 msg = await self.role_type_base(http_client=http_client)
 
