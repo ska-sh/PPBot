@@ -298,6 +298,27 @@ class Tapper:
         except Exception as e:
             self.error(f"Error occurred during balance: {e}")
 
+    async def get_shop_info(self, http_client: aiohttp.ClientSession):
+        try:
+            resp = await http_client.post("https://api.prod.piggypiggy.io/game/GetShopInfo", ssl=False)
+            resp_json = await resp.json()
+            msg = resp_json.get('msg')
+
+            if msg == u'success':
+                shop_box = resp_json.get('data').get('shopBox')
+                if shop_box is None:
+                    json_data = {"RoleType": 0, "PlayerID": 0, "UseStar": 0, "ConfigID": "2001", "Param": "",
+                                 "ClientParam": "2001", "Count": 1}
+                    resp = await http_client.post("https://api.prod.piggypiggy.io/game/CreateStarPay", json=json_data, ssl=False)
+                    resp_json = await resp.json()
+                    if resp_json.get('msg') == "success":
+                        self.success(f"宝箱使用成功")
+
+            #多休眠5秒
+            await asyncio.sleep(5)
+        except Exception as e:
+            self.error(f"Error occurred during balance: {e}")
+
     async def do_daily_task_info(self, http_client: aiohttp.ClientSession):
         try:
 
@@ -515,6 +536,8 @@ class Tapper:
 
                 msg = await self.plunder_detail(http_client=http_client)
 
+                msg = await self.get_shop_info(http_client=http_client)
+
                 msg = await self.do_daily_task_info(http_client=http_client)
 
                 try:
@@ -530,13 +553,14 @@ class Tapper:
                     msg = resp_json.get('msg')
                     if msg == u'success':
                         map_task = resp_json.get('data').get('mapTask')
-                        len_task = ""
+                        task_list_1 = ""
                         if self.role_type == 0:
-                            len_task = len(settings.TASKLIST_CD)
+                            task_list_1 = settings.TASKLIST_CD
                         elif self.role_type == 1:
-                            len_task = len(settings.TASKLIST_CD_1)
-                        if len(map_task) >= len(settings.TASKLIST_CD):
-                            for daily_task in settings.TASKLIST_CD:
+                            task_list_1 = settings.TASKLIST_CD_1
+                        if len(map_task) >= len(task_list_1):
+                            len_task = len(task_list_1)
+                            for daily_task in task_list_1:
                                 compelete_count = daily_task.get('compeleteCount')
                                 map_compelete_count = map_task.get(str(daily_task.get("task_id"))).get('compeleteCount')
                                 if map_compelete_count == compelete_count:
