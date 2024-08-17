@@ -318,16 +318,19 @@ class Tapper:
                     set_up_shop_time = resp_json.get('data').get('setUpShopTime')
                     if set_up_shop_time is None:
                         await self.set_up_shop(http_client=http_client)
+                        return True
 
                     #有未收取的工作奖励，点击收取
                     cur_task_id = resp_json.get('data').get('curTaskID')
                     if cur_task_id is not None:
                         await self.complete_task(http_client=http_client, task_id=cur_task_id)
+                        return True
 
                     #卡片任务没有执行过，点击执行
                     map_task = resp_json.get('data').get('mapTask')
                     if map_task is None:
                         await self.take_task(http_client=http_client, daily_task=daily_task)
+                        return True
                     else:
                         if map_task.get(str(daily_task.get("task_id"))) is None:
                             #self.success(f"task id: {daily_task.get('task_id')} is None")
