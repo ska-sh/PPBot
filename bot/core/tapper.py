@@ -552,21 +552,22 @@ class Tapper:
                     msg = resp_json.get('msg')
                     if msg == u'success':
                         map_task = resp_json.get('data').get('mapTask')
-                        task_list_1 = ""
-                        if self.role_type == 0:
-                            task_list_1 = settings.TASKLIST_CD
-                        elif self.role_type == 1:
-                            task_list_1 = settings.TASKLIST_CD_1
-                        if len(map_task) >= len(task_list_1):
-                            len_task = len(task_list_1)
-                            for daily_task in task_list_1:
-                                compelete_count = daily_task.get('compeleteCount')
-                                map_compelete_count = map_task.get(str(daily_task.get("task_id"))).get('compeleteCount')
-                                if map_compelete_count == compelete_count:
-                                    len_task = len_task - 1
-                                if len_task <= 0:
-                                    self.info(f"<lc>[PiggyPiggy]</lc> 工作全部完成，休眠24小时, balance: {currency}")
-                                    await asyncio.sleep(3600 * 24)
+                        if map_task is not None:
+                            task_list_1 = ""
+                            if self.role_type == 0:
+                                task_list_1 = settings.TASKLIST_CD
+                            elif self.role_type == 1:
+                                task_list_1 = settings.TASKLIST_CD_1
+                            if len(map_task) >= len(task_list_1):
+                                len_task = len(task_list_1)
+                                for daily_task in task_list_1:
+                                    compelete_count = daily_task.get('compeleteCount')
+                                    map_compelete_count = map_task.get(str(daily_task.get("task_id"))).get('compeleteCount')
+                                    if map_compelete_count == compelete_count:
+                                        len_task = len_task - 1
+                                    if len_task <= 0:
+                                        self.info(f"<lc>[PiggyPiggy]</lc> 工作全部完成，休眠24小时, balance: {currency}")
+                                        await asyncio.sleep(3600 * 24)
                     self.info(f"<lc>[PiggyPiggy]</lc> 休眠1分钟, balance: {currency}")
                     await asyncio.sleep(60)
                     login_need = False
