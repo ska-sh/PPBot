@@ -240,50 +240,56 @@ class Tapper:
 
     async def complete_achievement(self, http_client: aiohttp.ClientSession):
         try:
-            resp = await http_client.post("https://api.prod.piggypiggy.io/game/GetAchievementInfo", ssl=False)
-            resp_json = await resp.json()
-            msg = resp_json.get("msg")
+
             for task in settings.BLACKLIST_TASK:
+                resp = await http_client.post("https://api.prod.piggypiggy.io/game/GetAchievementInfo", ssl=False)
+                resp_json = await resp.json()
+                msg = resp_json.get("msg")
                 if msg == u'success':
                     map_info = resp_json.get("data").get("mapInfo")
-                    resp_task = map_info.get(task)
-                    if resp_task is None:
+                    if map_info is None:
                         json_data = {"PlayerID": 0, "Type": 2, "Id": int(task)}
                         resp = await http_client.post("https://api.prod.piggypiggy.io/game/AddSchedule",
                                                       json=json_data, ssl=False)
                         resp_json = await resp.json()
                         msg = resp_json.get("msg")
                         if msg == u'success':
-                            self.success(f"AddSchedule success:{task}")
-                        else:
-                            self.error(f"AddSchedule error:{task}")
-
-            await self.do_complete_achievement(http_client=http_client)
+                            self.success(f"开始做任务:{task}")
+                            await asyncio.sleep(60)
+                    else:
+                        resp_task = map_info.get(task)
+                        if resp_task is None:
+                            json_data = {"PlayerID": 0, "Type": 2, "Id": int(task)}
+                            resp = await http_client.post("https://api.prod.piggypiggy.io/game/AddSchedule",
+                                                          json=json_data, ssl=False)
+                            resp_json = await resp.json()
+                            msg = resp_json.get("msg")
+                            if msg == u'success':
+                                self.success(f"开始做任务:{task}")
+                                await asyncio.sleep(60)
+                    await self.do_complete_achievement(http_client=http_client, task_id=task)
             return True
         except Exception as e:
-            self.error(f"complete achievement: {e}")
+            self.error(f"做任务失败: {e}")
 
-    async def do_complete_achievement(self, http_client: aiohttp.ClientSession):
+    async def do_complete_achievement(self, http_client: aiohttp.ClientSession, task_id: str):
         resp = await http_client.post("https://api.prod.piggypiggy.io/game/GetAchievementInfo", ssl=False)
         resp_json = await resp.json()
         msg = resp_json.get("msg")
         if msg == u'success':
             map_info = resp_json.get("data").get("mapInfo")
-            for info in map_info:
-                przie = map_info.get(str(info)).get("przie")
-                if przie is None:
-                    self.info(f"AchievementID:{info}")
-                    json_data = {"PlayerID": 0, "AchievementID": int(info)}
-                    resp = await http_client.post("https://api.prod.piggypiggy.io/game/CompleteAchievement",
-                                                  json=json_data, ssl=False)
-                    resp_json = await resp.json()
-                    msg = resp_json.get("msg")
-                    if msg == u'success':
-                        self.success(f"complete achievement: {info}")
-                    else:
-                        self.error(f"{resp_json}")
+            przie = map_info.get(task_id).get("przie")
+            if przie is None:
+                # self.info(f"AchievementID:{info}")
+                json_data = {"PlayerID": 0, "AchievementID": int(task_id)}
+                resp = await http_client.post("https://api.prod.piggypiggy.io/game/CompleteAchievement",
+                                              json=json_data, ssl=False)
+                resp_json = await resp.json()
+                msg = resp_json.get("msg")
+                if msg == u'success':
+                    self.success(f"领取任务奖励： {task_id}")
                 else:
-                    self.success(f"complete achievement already success: {info}")
+                    self.error(f"领取奖励失败：{resp_json}")
 
     async def balance(self, http_client: aiohttp.ClientSession):
         try:
@@ -566,6 +572,9 @@ class Tapper:
                                     if map_compelete_count == compelete_count:
                                         len_task = len_task - 1
                                     if len_task <= 0:
+                                        self.info(f"<lc>[PiggyPiggy]</lc> 工作全部完成开始做任务")
+                                        await self.complete_achievement(http_client=http_client)
+                                        currency = await self.balance(http_client=http_client)
                                         self.info(f"<lc>[PiggyPiggy]</lc> 工作全部完成，休眠24小时, balance: {currency}")
                                         await asyncio.sleep(3600 * 24)
                     self.info(f"<lc>[PiggyPiggy]</lc> 休眠1分钟, balance: {currency}")
