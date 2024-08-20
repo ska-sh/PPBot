@@ -594,6 +594,12 @@ class Tapper:
 
 async def run_tapper(tg_client: Client, proxy: str | None):
     try:
+        # 在创建Tapper实例之前添加随机休眠
+        if settings.SLEEP_BETWEEN_START:
+            sleep_time = random.randint(settings.SLEEP_BETWEEN_START[0], settings.SLEEP_BETWEEN_START[1])
+            logger.info(f"{tg_client.name} | Sleep for {sleep_time} seconds before starting session...")
+            await asyncio.sleep(sleep_time)
+
         await Tapper(tg_client=tg_client).run(proxy=proxy)
     except InvalidSession:
         logger.error(f"{tg_client.name} | Invalid Session")

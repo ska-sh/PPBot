@@ -34,6 +34,9 @@ class Settings(BaseSettings):
 
     USE_PROXY_FROM_FILE: bool = False
 
+    # 新增 SLEEP_BETWEEN_START 配置
+    SLEEP_BETWEEN_START: list[int] = [10, 60]
+
 
 settings = Settings()
 
