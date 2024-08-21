@@ -5,7 +5,6 @@ if not exist venv (
     python -m venv venv
 )
 
-
 echo Activating virtual environment...
 call venv\Scripts\activate
 
