@@ -240,7 +240,6 @@ class Tapper:
 
     async def complete_achievement(self, http_client: aiohttp.ClientSession):
         try:
-
             for task in settings.BLACKLIST_TASK:
                 resp = await http_client.post("https://api.prod.piggypiggy.io/game/GetAchievementInfo", ssl=False)
                 resp_json = await resp.json()
@@ -511,9 +510,30 @@ class Tapper:
     async def get_invite_data(self, http_client: aiohttp.ClientSession):
         try:
             json_data = {"Page": 1, "PageSize": 10, "PlayerID": 0}
-            resp = await http_client.post("https://api.prod.piggypiggy.io/game/GetInviteData", ssl=False)
+            resp = await http_client.post("https://api.prod.piggypiggy.io/game/GetInviteData", json=json_data, ssl=False)
             resp_json = await resp.json()
             total_count = resp_json.get('data').get('totalCount')
+            if total_count is None:
+                return False
+
+            resp = await http_client.post("https://api.prod.piggypiggy.io/game/GetAchievementInfo", ssl=False)
+            resp_json = await resp.json()
+            map_info = resp_json.get('data').get('mapInfo')
+            if map_info is None:
+                return False
+
+            if total_count >= 1 and map_info.get('2001').get('przie') is None:
+                await self.do_complete_achievement(http_client=http_client, task_id='2001')
+                self.success(f"获取邀请奖励成功：2001")
+
+            if total_count >= 5 and map_info.get('2002').get('przie') is None:
+                await self.do_complete_achievement(http_client=http_client, task_id='2002')
+                self.success(f"获取邀请奖励成功：2002")
+
+            if total_count >= 12 and map_info.get('2003').get('przie') is None:
+                await self.do_complete_achievement(http_client=http_client, task_id='2003')
+                self.success(f"获取邀请奖励成功：2003")
+
         except Exception as e:
             self.error(f"获取邀请奖励失败: {e}")
 
@@ -554,6 +574,9 @@ class Tapper:
                 msg = await self.get_shop_info(http_client=http_client)
 
                 msg = await self.do_daily_task_info(http_client=http_client)
+
+                if settings.USE_INVITE:
+                    await self.get_invite_data(http_client=http_client)
 
                 try:
                     json_data = {"PlayerID": 0}

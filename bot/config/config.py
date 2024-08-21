@@ -40,6 +40,9 @@ class Settings(BaseSettings):
     # 完成一次卡片任务休眠时间： 单位秒
     SLEEP_BETWEEN_WOEKING: int = 60
 
+    # 是否收取邀请奖励
+    USE_INVITE: bool = False
+
 
 settings = Settings()
 
