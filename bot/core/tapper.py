@@ -508,6 +508,15 @@ class Tapper:
         except Exception as e:
             self.error(f"获取角色类型错误: {e}")
 
+    async def get_invite_data(self, http_client: aiohttp.ClientSession):
+        try:
+            json_data = {"Page": 1, "PageSize": 10, "PlayerID": 0}
+            resp = await http_client.post("https://api.prod.piggypiggy.io/game/GetInviteData", ssl=False)
+            resp_json = await resp.json()
+            total_count = resp_json.get('data').get('totalCount')
+        except Exception as e:
+            self.error(f"获取邀请奖励失败: {e}")
+
     async def run(self, proxy: str | None) -> None:
         access_token = None
         login_need = True
