@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     # 新增 SLEEP_BETWEEN_START 配置
     SLEEP_BETWEEN_START: list[int] = [10, 60]
 
+    # 完成一次卡片任务休眠时间： 单位秒
+    SLEEP_BETWEEN_WOEKING: int = 60
+
 
 settings = Settings()
 

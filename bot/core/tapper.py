@@ -402,7 +402,7 @@ class Tapper:
             msg = resp_json.get('msg')
             if msg == u'success':
                 self.success(f"获取工作奖励：{task_id}")
-                #工作奖励领取完成，休息5秒
+                # 工作奖励领取完成，休息5秒
                 await asyncio.sleep(5)
         except Exception as e:
             self.error(f"获取工作奖励错误 : {e}")
@@ -424,6 +424,7 @@ class Tapper:
             msg = resp_json.get('msg')
             if msg == u'success':
                 self.success(f"角色升级成功")
+                self.role_type = 1
             else:
                 self.success(f"角色升级失败")
             return True
@@ -457,7 +458,7 @@ class Tapper:
                         self.error(f"抢钱失败 : {e}")
                 elif card_cnts.get('103') >= 1:
                     try:
-                        #不是翻倍状态，使用翻倍卡片
+                        # 不是翻倍状态，使用翻倍卡片
                         if resp_json.get('data').get('detail').get('fanbei') is None:
                             json_data = {"PlayerID": 0}
                             resp = await http_client.post("https://api.prod.piggypiggy.io/game/StartFanbei", json=json_data, ssl=False)
@@ -468,9 +469,9 @@ class Tapper:
                     except Exception as e:
                         self.error(f"工资翻倍错误：{e}")
                 elif card_cnts.get('102') >= 1:
-                    #不是摸鱼状态，使用摸鱼卡片
+                    # 不是摸鱼状态，使用摸鱼卡片
                     if resp_json.get('data').get('detail').get('moyu') is None:
-                        #开始带薪休假
+                        # 开始带薪休假
                         json_data = {"PlayerID": 0}
                         resp = await http_client.post("https://api.prod.piggypiggy.io/game/StartMoyu", json=json_data, ssl=False)
                         resp_json = await resp.json()
@@ -546,12 +547,6 @@ class Tapper:
                 msg = await self.do_daily_task_info(http_client=http_client)
 
                 try:
-                    currency = await self.balance(http_client=http_client)
-                    if settings.AUTO_UPGRADE:
-                        if float(currency) > 2499 and int(self.role_type) == 0:
-                            self.info(f"开始抢升级角色")
-                            await self.create_star_pay(http_client=http_client)
-
                     json_data = {"PlayerID": 0}
                     resp = await http_client.post("https://api.prod.piggypiggy.io/game/GetDailyTaskInfo", json=json_data, ssl=False)
                     resp_json = await resp.json()
@@ -572,13 +567,19 @@ class Tapper:
                                     if map_compelete_count == compelete_count:
                                         len_task = len_task - 1
                                     if len_task <= 0:
-                                        self.info(f"<lc>[PiggyPiggy]</lc> 工作全部完成开始做任务")
+                                        # self.info(f"<lc>[PiggyPiggy]</lc> 工作全部完成开始做任务")
                                         await self.complete_achievement(http_client=http_client)
+
                                         currency = await self.balance(http_client=http_client)
+                                        if settings.AUTO_UPGRADE and float(currency) > 2499 and int(self.role_type) == 0:
+                                            # self.info(f"开始抢升级角色")
+                                            await self.create_star_pay(http_client=http_client)
                                         self.info(f"<lc>[PiggyPiggy]</lc> 工作全部完成，休眠24小时, balance: {currency}")
                                         await asyncio.sleep(3600 * 24)
-                    self.info(f"<lc>[PiggyPiggy]</lc> 休眠1分钟, balance: {currency}")
-                    await asyncio.sleep(60)
+
+                    currency = await self.balance(http_client=http_client)
+                    self.info(f"<lc>[PiggyPiggy]</lc> 休眠{settings.SLEEP_BETWEEN_WOEKING}秒, balance: {currency}")
+                    await asyncio.sleep(settings.SLEEP_BETWEEN_WOEKING)
                     login_need = False
 
                 except Exception as e:
