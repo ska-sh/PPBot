@@ -300,6 +300,8 @@ class Tapper:
                 currency = resp_json.get('data').get('currency')
                 # self.success(f"balance: {currency}")
                 return currency
+            else:
+                self.error(f"获取金额错误:{resp_json}")
         except Exception as e:
             self.error(f"Error occurred during balance: {e}")
 
@@ -378,7 +380,7 @@ class Tapper:
 
     async def take_task(self, http_client: aiohttp.ClientSession, daily_task: dict):
         try:
-            json_data = {"PlayerID": 0, "TaskID": int(daily_task.get('task_id'))}
+            json_data = {"PlayerID": 0, "TaskID": int(daily_task.get('task_id')), "Ad": 0}
             resp = await http_client.post("https://api.prod.piggypiggy.io/game/TakeTask", json=json_data, ssl=False)
             resp_json = await resp.json()
             msg = resp_json.get('msg')
@@ -395,7 +397,7 @@ class Tapper:
 
     async def complete_task(self, http_client: aiohttp.ClientSession, task_id: int):
         try:
-            json_data = {"PlayerID": 0, "TaskID": task_id}
+            json_data = {"PlayerID": 0, "TaskID": task_id, "Ad": 0}
             resp = await http_client.post("https://api.prod.piggypiggy.io/game/CompleteTask", json=json_data, ssl=False)
             resp_json = await resp.json()
             msg = resp_json.get('msg')
