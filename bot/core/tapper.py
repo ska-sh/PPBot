@@ -633,9 +633,9 @@ class Tapper:
 
                 msg = await self.do_daily_task_info(http_client=http_client)
 
-                msg = await self.angel_box_info(http_client=http_client)
-
-                msg = await self.get_achievement_config(http_client=http_client)
+                # msg = await self.angel_box_info(http_client=http_client)
+                #
+                # msg = await self.get_achievement_config(http_client=http_client)
 
                 if settings.USE_INVITE:
                     await self.get_invite_data(http_client=http_client)
@@ -662,7 +662,9 @@ class Tapper:
                                         len_task = len_task - 1
                                     if len_task <= 0:
                                         # self.info(f"<lc>[PiggyPiggy]</lc> 工作全部完成开始做任务")
-                                        await self.complete_achievement(http_client=http_client)
+                                        await self.angel_box_info(http_client=http_client)
+
+                                        await self.get_achievement_config(http_client=http_client)
 
                                         currency = await self.balance(http_client=http_client)
                                         if settings.AUTO_UPGRADE and float(currency) > 2499 and int(self.role_type) == 0:
@@ -690,10 +692,10 @@ class Tapper:
 async def run_tapper(tg_client: Client, proxy: str | None):
     try:
         # 在创建Tapper实例之前添加随机休眠
-        # if settings.SLEEP_BETWEEN_START:
-        #     sleep_time = random.randint(settings.SLEEP_BETWEEN_START[0], settings.SLEEP_BETWEEN_START[1])
-        #     logger.info(f"{tg_client.name} | Sleep for {sleep_time} seconds before starting session...")
-        #     await asyncio.sleep(sleep_time)
+        if settings.SLEEP_BETWEEN_START:
+            sleep_time = random.randint(settings.SLEEP_BETWEEN_START[0], settings.SLEEP_BETWEEN_START[1])
+            logger.info(f"{tg_client.name} | Sleep for {sleep_time} seconds before starting session...")
+            await asyncio.sleep(sleep_time)
 
         await Tapper(tg_client=tg_client).run(proxy=proxy)
     except InvalidSession:
