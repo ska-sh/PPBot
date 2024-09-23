@@ -590,7 +590,7 @@ class Tapper:
             if resp_json['msg'] == u'success':
                 str_config = json.loads(resp_json['data']['strConfig'])
                 for task in str_config:
-                    self.info(f"{task}")
+                    # self.info(f"{task}")
                     await self.complete_achievement(http_client=http_client, task_id=task)
         except Exception as e:
             self.error(f"get_achievement_config: {e}")
