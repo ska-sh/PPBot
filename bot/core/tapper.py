@@ -605,14 +605,15 @@ class Tapper:
                                         await self.complete_achievement(http_client=http_client)
 
                                         currency = await self.balance(http_client=http_client)
-                                        if settings.AUTO_UPGRADE and float(currency) > 2499 and int(self.role_type) == 0:
+                                        if settings.AUTO_UPGRADE and float(currency) > 2499 \
+                                                and int(self.role_type) == 0:
                                             # self.info(f"开始抢升级角色")
                                             await self.create_star_pay(http_client=http_client)
-                                        self.info(f"<lc>[PiggyPiggy]</lc> 工作全部完成，休眠24小时, balance: {currency}")
+                                        self.info(f"<lc>[PiggyPiggy]</lc> 工作全部完成，休眠24小时, balance: {currency}，角色: {self.role_type}")
                                         await asyncio.sleep(3600 * 24)
 
                     currency = await self.balance(http_client=http_client)
-                    self.info(f"<lc>[PiggyPiggy]</lc> 休眠{settings.SLEEP_BETWEEN_WOEKING}秒, balance: {currency}")
+                    self.info(f"<lc>[PiggyPiggy]</lc> 休眠{settings.SLEEP_BETWEEN_WOEKING}秒, balance: {currency}，角色: {self.role_type}")
                     await asyncio.sleep(settings.SLEEP_BETWEEN_WOEKING)
                     login_need = False
 
