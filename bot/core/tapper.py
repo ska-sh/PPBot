@@ -563,7 +563,7 @@ class Tapper:
                             resp = await http_client.post("https://api.prod.piggypiggy.io/game/angel_task_finish", json=json_data, ssl=False)
                             resp_json = await resp.json()
                             if resp_json.get('msg') == u'success':
-                                self.success(f"{task['taskID']} complete")
+                                self.success(f"{task['taskID']} finish")
                                 await asyncio.sleep(60)
                             else:
                                 self.error(f"{resp_json}")
