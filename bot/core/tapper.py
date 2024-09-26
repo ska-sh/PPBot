@@ -591,7 +591,8 @@ class Tapper:
                 str_config = json.loads(resp_json['data']['strConfig'])
                 for task in str_config:
                     # self.info(f"{task}")
-                    await self.complete_achievement(http_client=http_client, task_id=task)
+                    if task not in settings.NOT_DO_TASKLIST:
+                        await self.complete_achievement(http_client=http_client, task_id=task)
         except Exception as e:
             self.error(f"get_achievement_config: {e}")
 
