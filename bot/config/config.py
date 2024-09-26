@@ -13,7 +13,7 @@ class Settings(BaseSettings):
 
     POINTS: list[int] = [190, 230]
 
-    NOT_DO_TASKLIST: list[int] = [2001, 2002, 2003, 2004]
+    NOT_DO_TASKLIST: list[int] = [10078, 1411, 1501, 2001, 2002, 2003, 2004]
 
     TASKLIST_CD: list[object] = [{"task_id": 1001, "compeleteCount": 2, "cd": 180, "working": 30},
                                  {"task_id": 1002, "compeleteCount": 5, "cd": 5, "working": 20},
