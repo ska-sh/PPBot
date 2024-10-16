@@ -663,9 +663,9 @@ class Tapper:
                                         len_task = len_task - 1
                                     if len_task <= 0:
                                         # self.info(f"<lc>[PiggyPiggy]</lc> 工作全部完成开始做任务")
-                                        await self.angel_box_info(http_client=http_client)
-
-                                        await self.get_achievement_config(http_client=http_client)
+                                        # await self.angel_box_info(http_client=http_client)
+                                        #
+                                        # await self.get_achievement_config(http_client=http_client)
 
                                         currency = await self.balance(http_client=http_client)
                                         if settings.AUTO_UPGRADE and float(currency) > 2499 \
