@@ -632,7 +632,7 @@ class Tapper:
 
                 msg = await self.get_shop_info(http_client=http_client)
 
-                msg = await self.do_daily_task_info(http_client=http_client)
+                # msg = await self.do_daily_task_info(http_client=http_client)
 
                 # msg = await self.angel_box_info(http_client=http_client)
                 #
