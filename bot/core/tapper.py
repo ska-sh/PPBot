@@ -642,39 +642,39 @@ class Tapper:
                     await self.get_invite_data(http_client=http_client)
 
                 try:
-                    json_data = {"PlayerID": 0}
-                    resp = await http_client.post("https://api.prod.piggypiggy.io/game/GetDailyTaskInfo", json=json_data, ssl=False)
-                    resp_json = await resp.json()
-                    msg = resp_json.get('msg')
-                    if msg == u'success':
-                        map_task = resp_json.get('data').get('mapTask')
-                        if map_task is not None:
-                            task_list_1 = ""
-                            if self.role_type == 0:
-                                task_list_1 = settings.TASKLIST_CD
-                            elif self.role_type == 1:
-                                task_list_1 = settings.TASKLIST_CD_1
-                            if len(map_task) >= len(task_list_1):
-                                len_task = len(task_list_1)
-                                for daily_task in task_list_1:
-                                    compelete_count = daily_task.get('compeleteCount')
-                                    map_compelete_count = map_task.get(str(daily_task.get("task_id"))).get('compeleteCount')
-                                    if map_compelete_count == compelete_count:
-                                        len_task = len_task - 1
-                                    if len_task <= 0:
+                    # json_data = {"PlayerID": 0}
+                    # resp = await http_client.post("https://api.prod.piggypiggy.io/game/GetDailyTaskInfo", json=json_data, ssl=False)
+                    # resp_json = await resp.json()
+                    # msg = resp_json.get('msg')
+                    # if msg == u'success':
+                    #     map_task = resp_json.get('data').get('mapTask')
+                    #     if map_task is not None:
+                    #         task_list_1 = ""
+                    #         if self.role_type == 0:
+                    #             task_list_1 = settings.TASKLIST_CD
+                    #         elif self.role_type == 1:
+                    #             task_list_1 = settings.TASKLIST_CD_1
+                    #         if len(map_task) >= len(task_list_1):
+                    #             len_task = len(task_list_1)
+                    #             for daily_task in task_list_1:
+                    #                 compelete_count = daily_task.get('compeleteCount')
+                    #                 map_compelete_count = map_task.get(str(daily_task.get("task_id"))).get('compeleteCount')
+                    #                 if map_compelete_count == compelete_count:
+                    #                     len_task = len_task - 1
+                    #                 if len_task <= 0:
                                         # self.info(f"<lc>[PiggyPiggy]</lc> 工作全部完成开始做任务")
                                         # await self.angel_box_info(http_client=http_client)
                                         #
-                                        # await self.get_achievement_config(http_client=http_client)
 
-                                        currency = await self.balance(http_client=http_client)
-                                        if settings.AUTO_UPGRADE and float(currency) > 2499 \
-                                                and int(self.role_type) == 0:
-                                            # self.info(f"开始抢升级角色")
-                                            await self.create_star_pay(http_client=http_client)
-                                        self.info(f"<lc>[PiggyPiggy]</lc> 工作全部完成，休眠24小时, balance: {currency}，角色: {self.role_type}")
-                                        await asyncio.sleep(3600 * 24)
 
+                                        # currency = await self.balance(http_client=http_client)
+                                        # if settings.AUTO_UPGRADE and float(currency) > 2499 \
+                                        #         and int(self.role_type) == 0:
+                                        #     # self.info(f"开始抢升级角色")
+                                        #     await self.create_star_pay(http_client=http_client)
+                                        # self.info(f"<lc>[PiggyPiggy]</lc> 工作全部完成，休眠24小时, balance: {currency}，角色: {self.role_type}")
+                                        # await asyncio.sleep(3600 * 24)
+                    await self.get_achievement_config(http_client=http_client)
                     currency = await self.balance(http_client=http_client)
                     self.info(f"<lc>[PiggyPiggy]</lc> 休眠{settings.SLEEP_BETWEEN_WOEKING}秒, balance: {currency}，角色: {self.role_type}")
                     await asyncio.sleep(settings.SLEEP_BETWEEN_WOEKING)
